@@ -2,7 +2,6 @@ require "stash/client/version"
 require "restclient"
 require 'addressable/uri'
 require 'json'
-require 'pry'
 
 module Stash
   class Client
