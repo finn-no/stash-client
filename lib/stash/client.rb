@@ -6,6 +6,8 @@ require 'json'
 module Stash
   class Client
 
+    attr_reader :url
+
     def initialize(opts = {})
       if opts[:host]
         @url = Addressable::URI.parse('http://' + opts[:host] + '/rest/api/1.0/')
