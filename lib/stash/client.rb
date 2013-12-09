@@ -9,7 +9,9 @@ module Stash
     attr_reader :url
 
     def initialize(opts = {})
-      if opts[:host]
+      if opts[:host] && opts[:scheme]
+        @url = Addressable::URI.parse(opts[:scheme] + '://' + opts[:host] + '/rest/api/1.0/')
+      elsif opts[:host]
         @url = Addressable::URI.parse('http://' + opts[:host] + '/rest/api/1.0/')
       elsif opts[:url]
         @url = Addressable::URI.parse(opts[:url])
