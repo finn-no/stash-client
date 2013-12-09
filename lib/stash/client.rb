@@ -57,6 +57,8 @@ module Stash
         # default limit to 100 commits
         query_values['limit'] = 100
       end
+      
+      uri.query_values = query_values
 
       fetch_all(uri)
     end

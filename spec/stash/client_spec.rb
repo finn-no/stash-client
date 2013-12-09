@@ -26,8 +26,13 @@ module Stash
     end
 
     it 'fetches commits' do
-      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/repos/foo/commits').to_return(body: response_with_value('key' => 'value'))
+      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/repos/foo/commits?limit=100').to_return(body: response_with_value('key' => 'value'))
       client.commits_for({'link' => {'url' => '/repos/foo/browse'}}).should == [{'key' => 'value'}]
+    end
+
+    it 'respects since/until when fetching commits' do
+      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/repos/foo/commits?since=cafebabe&until=deadbeef').to_return(body: response_with_value('key' => 'value'))
+      client.commits_for({'link' => {'url' => '/repos/foo/browse'}}, since: 'cafebabe', until: 'deadbeef').should == [{'key' => 'value'}]
     end
 
   end
