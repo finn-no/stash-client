@@ -60,7 +60,11 @@ module Stash
       
       uri.query_values = query_values
 
-      fetch_all(uri)
+      if query_values['limit'] && query_values['limit'] < 100
+        fetch(uri).fetch('values')
+      else
+        fetch_all(uri)
+      end
     end
 
     private
