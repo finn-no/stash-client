@@ -1,3 +1,5 @@
+![Travis Status](https://travis-ci.org/finn-no/stash-client.png)
+
 # Stash::Client
 
 Very basic client for the Atlassian Stash REST API.
