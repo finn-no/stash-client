@@ -57,10 +57,27 @@ module Stash
         # default limit to 100 commits
         query_values['limit'] = 100
       end
-      
+
       uri.query_values = query_values
 
       if query_values['limit'] && query_values['limit'] < 100
+        fetch(uri).fetch('values')
+      else
+        fetch_all(uri)
+      end
+    end
+
+    def changes_for(repo, sha, opts = {})
+      path = remove_leading_slash repo.fetch('link').fetch('url').sub('browse', 'changes')
+      uri = @url.join(path)
+
+      query_values = { 'until' =>  sha }
+      query_values['since'] = opts[:parent] if opts[:parent]
+      query_values['limit'] = opts[:limit] if opts[:limit]
+
+      uri.query_values = query_values
+
+      if query_values['limit']
         fetch(uri).fetch('values')
       else
         fetch_all(uri)
