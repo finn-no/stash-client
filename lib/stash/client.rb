@@ -111,7 +111,7 @@ module Stash
     def post(uri, data)
       JSON.parse(
         RestClient.post(
-          uri.to_s, data, :accept => :json, :content_type => :json
+          uri.to_s, data.to_json, :accept => :json, :content_type => :json
         )
       )
     end
