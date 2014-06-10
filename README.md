@@ -24,7 +24,9 @@ Or install it yourself as:
 client = Stash::Client.new(host: 'git.example.com', credentials: 'user:pass')
 client.projects #=> [{'name' => 'foo', ...}]
 
-repo    = client.repositories.first #=> {'name' => 'bar', ...}
+repo = client.repositories.first              #=> {'name' => 'bar', ...}
+repo = client.repositories_for(project).first #=> {'name' => 'bar', ...}
+
 commits = client.commits_for(repo, since: 'e6c0a79734b3c1fa5c30c4c83cd3220e36d7e246')
 commits = client.commits_for(repo, limit: 100)
 ```
