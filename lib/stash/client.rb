@@ -18,7 +18,7 @@ module Stash
       elsif opts[:uri] && opts[:uri].kind_of?(Addressable::URI)
         @url = opts[:uri]
       else
-        raise ArgumentError, "must provie :url or :host"
+        raise ArgumentError, "must provide :url or :host"
       end
 
       @url.userinfo = opts[:credentials] if opts[:credentials]
@@ -111,7 +111,7 @@ module Stash
     def post(uri, data)
       JSON.parse(
         RestClient.post(
-          uri.to_s, data, :content_type => :json, :accept => :json
+          uri.to_s, data, :accept => :json, :content_type => :json
         )
       )
     end

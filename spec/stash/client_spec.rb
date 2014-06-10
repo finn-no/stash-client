@@ -21,11 +21,43 @@ module Stash
     it 'creates projects' do
       stub_request(:post, "foo:bar@git.example.com/rest/api/1.0/projects").
         with(:body => {:key => 'FOO', :name => 'Foobar', :description => 'bar'}).
-        to_return(body: {'key' => 'value'})
+        to_return(:body => {
+          'id' => 1,
+          'key' => 'FOO',
+          'name' => 'Foobar',
+          'description' => 'bar',
+          'public' => true,
+          'type' => 'NORMAL',
+          'link' => {
+            'url' => 'http://git.example.com/projects/FOO',
+            'rel' => 'self',
+          },
+          'links' => {
+            'self' => [
+              { 'href' => 'http://git.example.com/projects/FOO' },
+            ],
+          },
+        }.to_json)
 
       client.create_project({
         :key => 'FOO', :name => 'Foobar', :description => 'bar'
-      }).should == {'key' => 'value'}
+      }).should == {
+        'id' => 1,
+        'key' => 'FOO',
+        'name' => 'Foobar',
+        'description' => 'bar',
+        'public' => true,
+        'type' => 'NORMAL',
+        'link' => {
+          'url' => 'http://git.example.com/projects/FOO',
+          'rel' => 'self',
+        },
+        'links' => {
+          'self' => [
+            { 'href' => 'http://git.example.com/projects/FOO' },
+          ],
+        },
+      }
     end
 
     it 'fetches repositories' do
