@@ -28,6 +28,10 @@ module Stash
       fetch_all @url.join('projects')
     end
 
+    def create_project(opts={})
+      post @url.join('projects'), opts
+    end
+
     def repositories
       projects.flat_map do |project|
         relative_project_path = project.fetch('link').fetch('url') + '/repos'
@@ -101,7 +105,15 @@ module Stash
     end
 
     def fetch(uri)
-      JSON.parse(RestClient.get(uri.to_s, :accept => "application/json"))
+      JSON.parse(RestClient.get(uri.to_s, :accept => :json))
+    end
+
+    def post(uri, data)
+      JSON.parse(
+        RestClient.post(
+          uri.to_s, data, :content_type => :json, :accept => :json
+        )
+      )
     end
 
     def remove_leading_slash(str)

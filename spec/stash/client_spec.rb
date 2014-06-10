@@ -18,6 +18,16 @@ module Stash
       client.projects.should == [{"key" => "value"}]
     end
 
+    it 'creates projects' do
+      stub_request(:post, "foo:bar@git.example.com/rest/api/1.0/projects").
+        with(:body => {:key => 'FOO', :name => 'Foobar', :description => 'bar'}).
+        to_return(body: {'key' => 'value'})
+
+      client.create_project({
+        :key => 'FOO', :name => 'Foobar', :description => 'bar'
+      }).should == {'key' => 'value'}
+    end
+
     it 'fetches repositories' do
       stub_request(:get, "foo:bar@git.example.com/rest/api/1.0/projects").to_return(body: response_with_value('link' => {'url' => '/projects/foo'}))
       stub_request(:get, "foo:bar@git.example.com/rest/api/1.0/projects/foo/repos").to_return(body: response_with_value('key' => 'value'))
@@ -30,7 +40,7 @@ module Stash
       client.commits_for({'link' => {'url' => '/repos/foo/browse'}}).should == [{'key' => 'value'}]
     end
 
-    it 'feches changes' do
+    it 'fetches changes' do
       stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/projects/foo/repos/bar/changes?limit=100&until=deadbeef').to_return(body: response_with_value('key' => 'value'))
       
       repo = {'link' => {'url' => '/projects/foo/repos/bar/browse'}}
