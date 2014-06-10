@@ -30,9 +30,13 @@ module Stash
 
     def repositories
       projects.flat_map do |project|
-        relative_project_path = project.fetch('link').fetch('url') + '/repos'
-        fetch_all @url.join(remove_leading_slash(relative_project_path))
+        repositories_for project
       end
+    end
+
+    def repositories_for(project)
+      relative_project_path = project.fetch('link').fetch('url') + '/repos'
+      fetch_all @url.join(remove_leading_slash(relative_project_path))
     end
 
     def project_named(name)
