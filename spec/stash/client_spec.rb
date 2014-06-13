@@ -60,6 +60,29 @@ module Stash
       }
     end
 
+    it 'updates projects' do
+      stub_request(:put, "foo:bar@git.example.com/rest/api/1.0/projects/foo").
+        with(:body => {:description => 'new description'}).
+        to_return(:body => {
+          'description' => 'new description',
+        }.to_json)
+
+      project = { 'link' => {'url' => '/projects/foo'} }
+      client.update_project(project, {
+        :description => 'new description'
+      }).should == {
+        'description' => 'new description',
+      }
+    end
+
+    it 'deletes projects' do
+      stub_request(:delete, "foo:bar@git.example.com/rest/api/1.0/projects/foo").
+        to_return(:status => 200, :body => "")
+
+      project = { 'link' => {'url' => '/projects/foo'} }
+      client.delete_project(project).should == ""
+    end
+
     it 'fetches repositories' do
       stub_request(:get, "foo:bar@git.example.com/rest/api/1.0/projects").to_return(body: response_with_value('link' => {'url' => '/projects/foo'}))
       stub_request(:get, "foo:bar@git.example.com/rest/api/1.0/projects/foo/repos").to_return(body: response_with_value('key' => 'value'))
