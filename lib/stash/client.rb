@@ -18,7 +18,7 @@ module Stash
       elsif opts[:uri] && opts[:uri].kind_of?(Addressable::URI)
         @url = opts[:uri]
       else
-        raise ArgumentError, "must provie :url or :host"
+        raise ArgumentError, "must provide :url or :host"
       end
 
       @url.userinfo = opts[:credentials] if opts[:credentials]
@@ -26,6 +26,20 @@ module Stash
 
     def projects
       fetch_all @url.join('projects')
+    end
+
+    def create_project(opts={})
+      post @url.join('projects'), opts
+    end
+
+    def update_project(project, opts={})
+      relative_project_path = project.fetch('link').fetch('url')
+      put @url.join(remove_leading_slash(relative_project_path)), opts
+    end
+
+    def delete_project(project)
+      relative_project_path = project.fetch('link').fetch('url')
+      delete @url.join(remove_leading_slash(relative_project_path))
     end
 
     def repositories
@@ -101,7 +115,27 @@ module Stash
     end
 
     def fetch(uri)
-      JSON.parse(RestClient.get(uri.to_s, :accept => "application/json"))
+      JSON.parse(RestClient.get(uri.to_s, :accept => :json))
+    end
+
+    def post(uri, data)
+      JSON.parse(
+        RestClient.post(
+          uri.to_s, data.to_json, :accept => :json, :content_type => :json
+        )
+      )
+    end
+
+    def put(uri, data)
+      JSON.parse(
+        RestClient.put(
+          uri.to_s, data.to_json, :accept => :json, :content_type => :json
+        )
+      )
+    end
+
+    def delete(uri)
+      RestClient.delete(uri.to_s, :accept => :json)
     end
 
     def remove_leading_slash(str)
