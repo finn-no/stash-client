@@ -115,11 +115,11 @@ module Stash
     end
 
     def fetch(uri)
-      JSON.parse(RestClient.get(uri.to_s, :accept => :json))
+      parse(RestClient.get(uri.to_s, :accept => :json))
     end
 
     def post(uri, data)
-      JSON.parse(
+      parse(
         RestClient.post(
           uri.to_s, data.to_json, :accept => :json, :content_type => :json
         )
@@ -127,7 +127,7 @@ module Stash
     end
 
     def put(uri, data)
-      JSON.parse(
+      parse(
         RestClient.put(
           uri.to_s, data.to_json, :accept => :json, :content_type => :json
         )
@@ -136,6 +136,13 @@ module Stash
 
     def delete(uri)
       RestClient.delete(uri.to_s, :accept => :json)
+    end
+
+    def parse(str)
+      JSON.parse(str)
+    rescue Encoding::InvalidByteSequenceError
+      # HACK
+      JSON.parse(str.force_encoding("UTF-8"))
     end
 
     def remove_leading_slash(str)
