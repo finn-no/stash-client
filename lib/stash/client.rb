@@ -1,5 +1,5 @@
-require "stash/client/version"
-require "restclient"
+require 'stash/client/version'
+require 'faraday'
 require 'addressable/uri'
 require 'json'
 
@@ -9,19 +9,26 @@ module Stash
     attr_reader :url
 
     def initialize(opts = {})
-      if opts[:host] && opts[:scheme]
-        @url = Addressable::URI.parse(opts[:scheme] + '://' + opts[:host] + '/rest/api/1.0/')
-      elsif opts[:host]
-        @url = Addressable::URI.parse('http://' + opts[:host] + '/rest/api/1.0/')
-      elsif opts[:url]
-        @url = Addressable::URI.parse(opts[:url])
-      elsif opts[:uri] && opts[:uri].kind_of?(Addressable::URI)
-        @url = opts[:uri]
+      if opts[:client]
+        @client = opts[:client]
       else
-        raise ArgumentError, "must provide :url or :host"
+        if opts[:host] && opts[:scheme]
+          @url = Addressable::URI.parse(opts[:scheme] + '://' + opts[:host] + '/rest/api/1.0/')
+        elsif opts[:host]
+          @url = Addressable::URI.parse('http://' + opts[:host] + '/rest/api/1.0/')
+        elsif opts[:url]
+          @url = Addressable::URI.parse(opts[:url])
+        elsif opts[:uri] && opts[:uri].kind_of?(Addressable::URI)
+          @url = opts[:uri]
+        else
+          raise ArgumentError, "must provide :url or :host"
+        end
+
+        @url.userinfo = opts[:credentials] if opts[:credentials]
+
+        @client = Faraday.new(@url.site)
       end
 
-      @url.userinfo = opts[:credentials] if opts[:credentials]
     end
 
     def projects
@@ -115,27 +122,45 @@ module Stash
     end
 
     def fetch(uri)
-      parse(RestClient.get(uri.to_s, :accept => :json))
+      res = @client.get { |req|
+        req.url uri.to_s
+        req.headers['Accept'] = 'application/json'
+      }
+
+      parse(res.body)
     end
 
     def post(uri, data)
-      parse(
-        RestClient.post(
-          uri.to_s, data.to_json, :accept => :json, :content_type => :json
-        )
-      )
+      res = @client.post { |req|
+        req.url uri.to_s
+        req.body = data.to_json
+
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['Accpet']       = 'application/json'
+      }
+
+      parse(res.body)
     end
 
     def put(uri, data)
-      parse(
-        RestClient.put(
-          uri.to_s, data.to_json, :accept => :json, :content_type => :json
-        )
-      )
+      res = @client.put { |req|
+        req.url uri.to_s
+        req.body = data.to_json
+
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['Accpet']       = 'application/json'
+      }
+
+      parse(res.body)
     end
 
     def delete(uri)
-      RestClient.delete(uri.to_s, :accept => :json)
+      res = @client.delete { |req|
+        req.url uri.to_s
+        req.headers['Accpet']       = 'application/json'
+      }
+
+      res.body
     end
 
     def parse(str)
