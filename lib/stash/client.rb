@@ -2,6 +2,7 @@ require 'stash/client/version'
 require 'faraday'
 require 'addressable/uri'
 require 'json'
+require 'active_support/core_ext/hash/slice'
 
 module Stash
   class Client
@@ -26,7 +27,7 @@ module Stash
 
         @url.userinfo = opts[:credentials] if opts[:credentials]
 
-        @client = Faraday.new(@url.site)
+        @client = Faraday.new(@url.site, opts.slice(:ssl, :params, :headers, :request, :proxy))
       end
 
     end
@@ -47,6 +48,10 @@ module Stash
     def delete_project(project)
       relative_project_path = project.fetch('link').fetch('url')
       delete @url.join(remove_leading_slash(relative_project_path))
+    end
+
+    def repository(project_key, repository_slug)
+      fetch("projects/#{project_key}/repos/#{repository_slug}")
     end
 
     def repositories
