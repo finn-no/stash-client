@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'oauth'
 
 module Stash
   describe Client do
@@ -11,6 +12,30 @@ module Stash
         'start' => 0,
         'size' => 1
       }.to_json
+    end
+
+    context "oauth" do
+      let(:client) {
+        Client.new(
+          url: 'https://git.example.com',
+          oauth: {
+            key: 'key',
+            secret: IO.read(File.dirname(__FILE__) + "/../../spec/key.pem"),
+            access_token: 'foo',
+            access_token_secret: 'bar'
+          }
+        )
+      }
+
+      it 'uses OAuthWrapper class' do
+        client.client.stub(:fetch).and_return(Struct.new(nil, :body).new(response_with_value('key' => 'value')))
+        client.projects.should == [{"key" => "value"}]
+      end
+    end
+
+    it 'fetches file content' do
+      stub_request(:get, "http://foo:bar@git.example.com/projects/PROJ_KEY/repos/repo/browse/file.txt?at=4367b0f892a166f3e3fa3ae54d74e897af1007a8&raw=").to_return(body: "file content")
+      client.content(project_key: 'PROJ_KEY', repository_name: 'repo', path: 'file.txt', ref: '4367b0f892a166f3e3fa3ae54d74e897af1007a8').should == 'file content'
     end
 
     it 'fetches projects' do

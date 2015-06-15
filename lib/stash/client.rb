@@ -1,12 +1,15 @@
 require 'stash/client/version'
+require 'stash/client/oauth_wrapper'
+require 'stash/client/faraday_wrapper'
 require 'faraday'
 require 'addressable/uri'
 require 'json'
+require 'active_support/core_ext/hash/slice'
 
 module Stash
   class Client
 
-    attr_reader :url
+    attr_reader :url, :client
 
     def initialize(opts = {})
       if opts[:client]
@@ -26,9 +29,12 @@ module Stash
 
         @url.userinfo = opts[:credentials] if opts[:credentials]
 
-        @client = Faraday.new(@url.site)
+        if opts[:oauth]
+          @client = OAuthWrapper.new(@url.site, opts.slice(:ssl, :params, :headers, :request, :proxy, :oauth))
+        else
+          @client = FaradayWrapper.new(@url.site, opts.slice(:ssl, :params, :headers, :request, :proxy))
+        end
       end
-
     end
 
     def projects
@@ -47,6 +53,10 @@ module Stash
     def delete_project(project)
       relative_project_path = project.fetch('link').fetch('url')
       delete @url.join(remove_leading_slash(relative_project_path))
+    end
+
+    def repository(project_key, repository_slug)
+      fetch(@url.join("projects/#{project_key}/repos/#{repository_slug}"))
     end
 
     def repositories
@@ -105,6 +115,20 @@ module Stash
       end
     end
 
+    def content(options)
+      if Hash === options
+        path =
+          "/projects/#{options[:project_key]}/repos/#{options[:repository_name]}/" +
+          "browse/#{options[:path]}?at=#{options[:ref]}&raw".to_s
+      elsif String === options
+        path = options
+      else
+        raise ArgumentError.new('param has to be hash or strig')
+      end
+      puts path
+      @client.fetch(path.to_s).body
+    end
+
     private
 
     def fetch_all(uri)
@@ -122,44 +146,36 @@ module Stash
     end
 
     def fetch(uri)
-      res = @client.get { |req|
-        req.url uri.to_s
-        req.headers['Accept'] = 'application/json'
-      }
-
+      res = @client.fetch(uri.to_s, { 'Accept' => 'application/json' })
       parse(res.body)
     end
 
     def post(uri, data)
-      res = @client.post { |req|
-        req.url uri.to_s
-        req.body = data.to_json
-
-        req.headers['Content-Type'] = 'application/json'
-        req.headers['Accpet']       = 'application/json'
-      }
-
+      res = @client.post(
+        uri.to_s,
+        data.to_json,
+        {
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        }
+      )
       parse(res.body)
     end
 
     def put(uri, data)
-      res = @client.put { |req|
-        req.url uri.to_s
-        req.body = data.to_json
-
-        req.headers['Content-Type'] = 'application/json'
-        req.headers['Accpet']       = 'application/json'
-      }
-
+      res = @client.put(
+        uri.to_s,
+        data.to_json,
+        {
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        }
+      )
       parse(res.body)
     end
 
     def delete(uri)
-      res = @client.delete { |req|
-        req.url uri.to_s
-        req.headers['Accpet']       = 'application/json'
-      }
-
+      res = @client.delete(uri.to_s, { 'Accept' => 'application/json' })
       res.body
     end
 
