@@ -90,6 +90,21 @@ module Stash
       client.repositories.should == [{'key' => 'value'}]
     end
 
+    it 'updates repositories' do
+      stub_request(:put, "foo:bar@git.example.com/rest/api/1.0/projects/foo/repo/bar").
+        with(:body => {:key => 'new key'}).
+        to_return(:body => {
+          'key' => 'new key',
+        }.to_json)
+
+      repo = { 'link' => {'url' => '/projects/foo/repo/bar/browse'} }
+      client.update_repository(repo, {
+        :key => 'new key'
+      }).should == {
+        'key' => 'new key',
+      }
+    end
+
     it 'fetches commits' do
       stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/repos/foo/commits?limit=100').to_return(body: response_with_value('key' => 'value'))
       client.commits_for({'link' => {'url' => '/repos/foo/browse'}}).should == [{'key' => 'value'}]

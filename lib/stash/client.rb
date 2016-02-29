@@ -64,6 +64,11 @@ module Stash
       repositories.find { |e| e['name'] == name }
     end
 
+    def update_repository(repo, opts = {})
+      relative_project_path = repo.fetch('link').fetch('url')
+      put @url.join(remove_trailing_browse(remove_leading_slash(relative_project_path))), opts
+    end
+
     def commits_for(repo, opts = {})
       query_values = {}
 
@@ -174,5 +179,8 @@ module Stash
       str.sub(/\A\//, '')
     end
 
+    def remove_trailing_browse(str)
+      str.sub('/browse', '')
+    end
   end
 end
