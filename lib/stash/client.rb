@@ -61,7 +61,7 @@ module Stash
     end
 
     def repository_named(name)
-      repositories.find { |e| e['name'] == name }
+      repositories.find_all { |e| e['name'] == name }
     end
 
     def commits_for(repo, opts = {})
