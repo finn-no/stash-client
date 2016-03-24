@@ -61,18 +61,15 @@ module Stash
     end
 
     it 'updates projects' do
-      stub_request(:put, "foo:bar@git.example.com/rest/api/1.0/projects/foo").
-        with(:body => {:description => 'new description'}).
-        to_return(:body => {
-          'description' => 'new description',
+      stub_request(:put, 'foo:bar@git.example.com/rest/api/1.0/projects/foo')
+        .with(:body => { :description => 'new description' })
+        .to_return(:body => {
+          'description' => 'new description'
         }.to_json)
 
-      project = { 'link' => {'url' => '/projects/foo'} }
-      client.update_project(project, {
-        :description => 'new description'
-      }).should == {
-        'description' => 'new description',
-      }
+      project = { 'link' => { 'url' => '/projects/foo' } }
+      client.update_project(project, :description => 'new description')
+        .should == { 'description' => 'new description' }
     end
 
     it 'deletes projects' do
@@ -107,5 +104,18 @@ module Stash
       client.commits_for({'link' => {'url' => '/repos/foo/browse'}}, since: 'cafebabe', until: 'deadbeef').should == [{'key' => 'value'}]
     end
 
+    it 'fetches repositores matching a given name' do
+      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/projects')
+        .to_return(:body => { 'isLastPage' => true, 'start' => 1, 'size' => 1,
+                              'values' => [{ 'link' => { 'url' => '/projects/foo' } }, {
+                                'link' => { 'url' => '/projects/bar' } }]
+          }.to_json)
+      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/projects/foo/repos')
+        .to_return(body: response_with_value('name' => 'bat'))
+      stub_request(:get, 'foo:bar@git.example.com/rest/api/1.0/projects/bar/repos')
+        .to_return(body: response_with_value('name' => 'bat'))
+
+      client.repository_named('bat').should == [{ 'name' => 'bat' }, { 'name' => 'bat' }]
+    end
   end
 end
