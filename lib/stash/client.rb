@@ -136,7 +136,7 @@ module Stash
         req.body = data.to_json
 
         req.headers['Content-Type'] = 'application/json'
-        req.headers['Accpet']       = 'application/json'
+        req.headers['Accept']       = 'application/json'
       }
 
       parse(res.body)
@@ -148,7 +148,7 @@ module Stash
         req.body = data.to_json
 
         req.headers['Content-Type'] = 'application/json'
-        req.headers['Accpet']       = 'application/json'
+        req.headers['Accept']       = 'application/json'
       }
 
       parse(res.body)
@@ -157,7 +157,7 @@ module Stash
     def delete(uri)
       res = @client.delete { |req|
         req.url uri.to_s
-        req.headers['Accpet']       = 'application/json'
+        req.headers['Accept']       = 'application/json'
       }
 
       res.body
