@@ -105,8 +105,6 @@ module Stash
       end
     end
 
-    private
-
     def fetch_all(uri)
       response, result = {}, []
 
